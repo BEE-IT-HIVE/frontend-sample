@@ -56,6 +56,27 @@ const TECH_QUOTES = [
   "Simplicity is the soul of efficiency. – Austin Freeman"
 ];
 
+const COMMAND_DOCS: Record<string, { desc: string, usage: string, example: string }> = {
+  ls: { desc: "Lists all available pages and directories in the Hive Portal.", usage: "ls", example: "ls" },
+  cd: { desc: "Navigates to a specific page. Use '..' to go home.", usage: "cd [page_name]", example: "cd events" },
+  search: { desc: "Performs a global search across events, team members, and articles.", usage: "search [query]", example: "search hackathon" },
+  events: { desc: "Lists the next 3 upcoming events sorted by date.", usage: "events", example: "events" },
+  team: { desc: "Displays core executive committee members.", usage: "team", example: "team" },
+  blog: { desc: "Shows the latest published article/insight.", usage: "blog", example: "blog" },
+  gallery: { desc: "Fetches a random image from the media gallery.", usage: "gallery", example: "gallery" },
+  calc: { desc: "Evaluates a mathematical expression.", usage: "calc [expression]", example: "calc 2 + 2 * 4" },
+  weather: { desc: "Displays current mock weather conditions in Pokhara.", usage: "weather", example: "weather" },
+  quote: { desc: "Returns a random tech-related wisdom quote.", usage: "quote", example: "quote" },
+  play: { desc: "Starts a mini-game (rps, number, scramble, trivia).", usage: "play [game_name]", example: "play trivia" },
+  matrix: { desc: "Toggles the immersive Matrix digital rain simulation.", usage: "matrix", example: "matrix" },
+  toggle: { desc: "Switches between Light and Dark themes.", usage: "toggle theme", example: "toggle theme" },
+  sys: { desc: "Displays system diagnostics and status.", usage: "sys", example: "sys" },
+  clear: { desc: "Clears the terminal chat history.", usage: "clear", example: "clear" },
+  roll: { desc: "Rolls a 6-sided die.", usage: "roll", example: "roll" },
+  flip: { desc: "Flips a coin (Heads/Tails).", usage: "flip", example: "flip" },
+  whoami: { desc: "Displays current user session info.", usage: "whoami", example: "whoami" },
+};
+
 // --- Audio Engine (Granular Synthesis) ---
 
 const useDroidVoice = () => {
@@ -286,8 +307,24 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
       
       switch(command) {
           case 'help':
+              if (args[0]) {
+                  const cmdKey = args[0].toLowerCase().replace('/', '');
+                  const doc = COMMAND_DOCS[cmdKey];
+                  if (doc) {
+                      return `> MAN PAGE: ${cmdKey.toUpperCase()}
+---------------------------
+${doc.desc}
+
+Usage:   ${doc.usage}
+Example: ${doc.example}`;
+                  }
+                  return `Error: No manual entry for '${cmdKey}'. Available commands listed in '/help'.`;
+              }
+
               return `TERMINAL v3.2 COMMANDS
 ========================
+Type '/help [command]' for details (e.g., '/help search')
+
 [/] SYSTEM
   toggle theme   : Light/Dark
   sys            : Diagnostics
@@ -510,7 +547,7 @@ WING_STATUS: Deployed`;
     const lower = text.toLowerCase().trim();
 
     // Commands
-    if (text.startsWith('/') || ['ls', 'cd', 'clear', 'pwd', 'calc', 'sys', 'matrix', 'whoami', 'sudo', 'date', 'roll', 'flip', 'toggle', 'search', 'events', 'team', 'blog', 'gallery', 'weather', 'quote'].includes(lower.split(' ')[0])) {
+    if (text.startsWith('/') || ['ls', 'cd', 'clear', 'pwd', 'calc', 'sys', 'matrix', 'whoami', 'sudo', 'date', 'roll', 'flip', 'toggle', 'search', 'events', 'team', 'blog', 'gallery', 'weather', 'quote', 'help'].includes(lower.split(' ')[0])) {
         const clean = text.startsWith('/') ? text.slice(1) : text;
         const [cmd, ...args] = clean.split(' ');
         const output = await handleCommand(cmd, args);
