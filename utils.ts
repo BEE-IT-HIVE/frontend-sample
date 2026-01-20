@@ -16,6 +16,5 @@ export const sanitize = (val: string) => {
       '"': '&quot;',
       "'": '&#39;',
       '/': '&#47;'
-    }[m] || m))
-    .trim();
+    }[m] || m));
 };
