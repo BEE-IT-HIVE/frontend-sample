@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useAnimation } from 'framer-motion';
 import { Page, AppSettings } from '../types';
 import { useData } from '../context/DataContext';
-import { Send, X, Calendar, Users, Terminal, Gamepad2, Heart, Zap, Sparkles, Settings, Search, BookOpen } from 'lucide-react';
+import { Send, X, Calendar, Users, Terminal, Gamepad2, Heart, Zap, Sparkles, Settings, Search, Image as ImageIcon } from 'lucide-react';
 
 // --- Types & Constants ---
 
@@ -22,8 +22,8 @@ const SUGGESTIONS = [
   { label: "Play Games", icon: Gamepad2 },
   { label: "/help", icon: Terminal },
   { label: "Search", icon: Search },
-  { label: "Upcoming Events", icon: Calendar },
-  { label: "Team Info", icon: Users },
+  { label: "Gallery", icon: ImageIcon },
+  { label: "Events", icon: Calendar },
 ];
 
 const TRIVIA_QUESTIONS = [
@@ -46,6 +46,14 @@ const TECH_JOKES = [
   "There are 10 types of people in the world: those who understand binary, and those who don't.",
   "A SQL query walks into a bar, walks up to two tables and asks... 'Can I join you?'",
   "How many programmers does it take to change a light bulb? None, that's a hardware problem."
+];
+
+const TECH_QUOTES = [
+  "Talk is cheap. Show me the code. – Linus Torvalds",
+  "Programs must be written for people to read, and only incidentally for machines to execute. – Harold Abelson",
+  "Truth can only be found in one place: the code. – Robert C. Martin",
+  "Code is like humor. When you have to explain it, it’s bad. – Cory House",
+  "Simplicity is the soul of efficiency. – Austin Freeman"
 ];
 
 // --- Audio Engine (Granular Synthesis) ---
@@ -132,7 +140,7 @@ const useDroidVoice = () => {
 // --- Main Component ---
 
 const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updateSettings }) => {
-  const { events, team, articles } = useData(); // Context Integration for Intelligence
+  const { events, team, articles, albums } = useData(); 
   const [isOpen, setIsOpen] = useState(false);
   const [currentEmotion, setCurrentEmotion] = useState<Emotion>('neutral');
   const [isHovered, setIsHovered] = useState(false);
@@ -145,8 +153,7 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
   const [score, setScore] = useState(0);
   const [targetNumber, setTargetNumber] = useState<number>(0);
   const [scrambleData, setScrambleData] = useState<{word: string, scrambled: string} | null>(null);
-  const [currentPath, setCurrentPath] = useState<string>("/home/visitor");
-
+  
   const { speak, stopSpeaking, playHappy, playSad, playAlert, playProcessing, initAudio } = useDroidVoice();
 
   const [messages, setMessages] = useState<{
@@ -154,9 +161,10 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
     text: string, 
     type?: 'cmd' | 'text' | 'matrix', 
     action?: { label: string, page: Page },
+    image?: string,
     links?: { label: string, url: string, icon: string, isBrand?: boolean }[]
   }[]>([
-    { role: 'assistant', text: "HIVE DROID v3.1 Online. 🤖 \nI have full access to the Hive database.\nTry '/help' to see my expanded capabilities." }
+    { role: 'assistant', text: "HIVE DROID v3.2 Online. 🤖 \nI have deep access to the Hive database.\nTry '/help' to see my expanded capabilities." }
   ]);
   const [input, setInput] = useState('');
   
@@ -255,7 +263,7 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
       setTimeout(() => setCurrentEmotion('neutral'), 3000);
   };
 
-  // --- Logic Engine (Terminal v3.1) ---
+  // --- Logic Engine (Terminal v3.2) ---
 
   const addMessage = (text: string, type: 'text' | 'cmd' | 'matrix' = 'text', role: 'assistant' | 'user' = 'assistant', extra?: any) => {
       setMessages(prev => [...prev, { role, text, type, ...extra }]);
@@ -271,7 +279,6 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
     if (page === Page.Admin) { triggerAccessDenied(); return; }
     playProcessing();
     onPageChange(page);
-    setCurrentPath(`/home/visitor/${page}`);
   };
 
   const handleCommand = async (cmd: string, args: string[]) => {
@@ -279,27 +286,27 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
       
       switch(command) {
           case 'help':
-              return `TERMINAL v3.1 COMMANDS
+              return `TERMINAL v3.2 COMMANDS
 ========================
-[/] SYSTEM & CONFIG
+[/] SYSTEM
   toggle theme   : Light/Dark
-  font [sm/md]   : Text Size
-  sys / status   : Diagnostics
+  sys            : Diagnostics
   clear          : Clear Chat
+  matrix         : Toggle Simulation
 
-[/] NAVIGATION & DATA
-  ls             : List Pages
-  cd [page]      : Navigate
+[/] DATA & NAV
+  ls, cd [page]  : Navigate
   search [query] : Deep Search
-  events         : List Upcoming
+  events         : List Events
   team           : Show Execs
   blog           : Latest Articles
+  gallery        : Random Photo
 
-[/] GAMES & TOOLS
-  play [game]    : rps, trivia, etc
+[/] TOOLS & FUN
   calc [expr]    : Calculator
-  roll / flip    : Randomizer
-  matrix         : Visual Mode`;
+  weather        : Local Weather
+  quote          : Tech Wisdom
+  play [game]    : rps, trivia...`;
           
           case 'ls':
               const pages = Object.values(Page);
@@ -322,9 +329,9 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
               if (!args[0]) return "usage: search [query]";
               const q = args.join(' ').toLowerCase();
               const hits = [
-                  ...events.filter(e => e.title.toLowerCase().includes(q) || e.tags.some(t => t.includes(q))).map(e => `Event: ${e.title}`),
+                  ...events.filter(e => e.title.toLowerCase().includes(q) || e.tags.some(t => t.includes(q)) || e.description?.toLowerCase().includes(q)).map(e => `Event: ${e.title}`),
                   ...team.filter(m => m.name.toLowerCase().includes(q) || m.role.toLowerCase().includes(q)).map(m => `Member: ${m.name}`),
-                  ...articles.filter(a => a.title.toLowerCase().includes(q)).map(a => `Article: ${a.title}`)
+                  ...articles.filter(a => a.title.toLowerCase().includes(q) || a.content.toLowerCase().includes(q)).map(a => `Article: ${a.title}`)
               ];
               if (hits.length === 0) return `No matches found for '${q}'`;
               return `Search Results:\n${hits.slice(0, 5).join('\n')}${hits.length > 5 ? `\n...and ${hits.length - 5} more.` : ''}`;
@@ -335,14 +342,29 @@ const FloatingBee: React.FC<FloatingBeeProps> = ({ onPageChange, settings, updat
               return `UPCOMING EVENTS:\n` + nextEvts.map(e => `• ${e.title} (${new Date(e.datetime.start).toLocaleDateString()})`).join('\n');
 
           case 'team':
-              const execs = team.filter(t => t.role.includes('President') || t.role.includes('Secretary')).slice(0, 3);
+              const execs = team.filter(t => t.role.includes('President') || t.role.includes('Secretary') || t.role.includes('Coordinator')).slice(0, 4);
               return `CORE TEAM:\n` + execs.map(t => `• ${t.name} - ${t.role}`).join('\n') + `\n(Type 'cd team' for full list)`;
 
           case 'blog':
-          case 'articles':
               const latest = articles.filter(a => a.status === 'published')[0];
               if (!latest) return "No articles published.";
               return `LATEST INSIGHT:\n"${latest.title}" by ${latest.author}\nUse 'cd articles' to read.`;
+
+          case 'gallery':
+              const allImages = albums.flatMap(a => a.assets);
+              if (allImages.length === 0) return "Gallery is empty.";
+              const randomImage = allImages[Math.floor(Math.random() * allImages.length)];
+              addMessage("Here's a snapshot from our gallery:", 'text', 'assistant', { image: randomImage.url });
+              return null;
+
+          case 'weather':
+              emote('happy');
+              return "Pokhara, Nepal:\nTemp: 24°C ☀️\nHumidity: 65%\nCondition: Perfect for coding!";
+
+          case 'quote':
+              const quote = TECH_QUOTES[Math.floor(Math.random() * TECH_QUOTES.length)];
+              emote('thinking');
+              return `"${quote}"`;
 
           case 'calc':
               try {
@@ -368,8 +390,12 @@ MEMBERS_ACTIVE: ${team.length}
 WING_STATUS: Deployed`;
 
           case 'matrix':
+              const newMode = !settings.matrixMode;
+              updateSettings({ matrixMode: newMode });
               emote('matrix');
-              return "Wake up, Neo...\nThe Hive has you.";
+              return newMode 
+                ? "Wake up, Neo...\nThe Matrix has you.\n(Type 'matrix' again to exit)" 
+                : "Disconnecting from the Matrix... Welcome back to reality.";
 
           case 'toggle':
               if (args[0] === 'theme') {
@@ -484,7 +510,7 @@ WING_STATUS: Deployed`;
     const lower = text.toLowerCase().trim();
 
     // Commands
-    if (text.startsWith('/') || ['ls', 'cd', 'clear', 'pwd', 'calc', 'sys', 'matrix', 'whoami', 'sudo', 'date', 'roll', 'flip', 'toggle', 'search', 'events', 'team', 'blog'].includes(lower.split(' ')[0])) {
+    if (text.startsWith('/') || ['ls', 'cd', 'clear', 'pwd', 'calc', 'sys', 'matrix', 'whoami', 'sudo', 'date', 'roll', 'flip', 'toggle', 'search', 'events', 'team', 'blog', 'gallery', 'weather', 'quote'].includes(lower.split(' ')[0])) {
         const clean = text.startsWith('/') ? text.slice(1) : text;
         const [cmd, ...args] = clean.split(' ');
         const output = await handleCommand(cmd, args);
@@ -497,7 +523,8 @@ WING_STATUS: Deployed`;
     const foundMember = team.find(m => lower.includes(m.name.toLowerCase()) || (lower.includes(m.role.toLowerCase()) && m.role.toLowerCase() !== 'active member'));
     if (foundMember) {
         addMessage(`Found record for ${foundMember.name} (${foundMember.role}):\n"${foundMember.message}"`, 'text', 'assistant', {
-             action: { label: "View Profile", page: Page.Team }
+             action: { label: "View Profile", page: Page.Team },
+             image: foundMember.image
         });
         emote('happy');
         return;
@@ -507,7 +534,8 @@ WING_STATUS: Deployed`;
     const foundEvent = events.find(e => lower.includes(e.title.toLowerCase()) || (e.tags && e.tags.some(t => lower.includes(t.toLowerCase()))));
     if (foundEvent) {
          addMessage(`Event Found: ${foundEvent.title}\nDate: ${new Date(foundEvent.datetime.start).toLocaleDateString()}\nStatus: ${foundEvent.status}`, 'text', 'assistant', {
-             action: { label: "View Event", page: Page.Events }
+             action: { label: "View Event", page: Page.Events },
+             image: foundEvent.image
          });
          emote('excited');
          return;
@@ -545,6 +573,10 @@ WING_STATUS: Deployed`;
     if (lower.includes('event')) { responseText = "Checking database... found active events schedule."; action = { label: "View Events", page: Page.Events }; }
     else if (lower.includes('team')) { responseText = "Loading personnel dossier..."; action = { label: "Meet Team", page: Page.Team }; }
     else if (lower.includes('contact')) { responseText = "Opening secure channels."; action = { label: "Contact Us", page: Page.Contact }; }
+    else if (lower.includes('photo') || lower.includes('gallery')) { 
+        handleCommand('gallery', []); 
+        return; 
+    }
 
     addMessage(responseText, 'text', 'assistant', { action, links });
   };
@@ -576,7 +608,7 @@ WING_STATUS: Deployed`;
   };
 
   return (
-    <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[200] flex flex-col items-end pointer-events-none">
+    <div className="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[10000] flex flex-col items-end pointer-events-none">
       
       {/* Messenger Interface */}
       <AnimatePresence>
@@ -593,7 +625,7 @@ WING_STATUS: Deployed`;
               <div className="flex items-center gap-3">
                 <div className={`w-2.5 h-2.5 rounded-full ${mode !== 'chat' ? 'bg-purple-400 animate-ping' : 'bg-green-400 animate-pulse'} shadow-[0_0_8px_currentColor]`}></div>
                 <div>
-                    <span className={`font-heading font-bold tracking-wider text-sm block ${currentEmotion === 'matrix' ? 'text-green-500 font-code' : ''}`}>HIVE TERMINAL v3.1</span>
+                    <span className={`font-heading font-bold tracking-wider text-sm block ${currentEmotion === 'matrix' ? 'text-green-500 font-code' : ''}`}>HIVE TERMINAL v3.2</span>
                     <span className="text-[10px] font-mono text-gray-300 block opacity-80">{mode === 'chat' ? 'System Ready' : `GAME: ${mode.toUpperCase()}`}</span>
                 </div>
               </div>
@@ -619,6 +651,11 @@ WING_STATUS: Deployed`;
                                 : 'bg-white dark:bg-white/10 text-gray-700 dark:text-gray-200 rounded-[1.25rem] rounded-tl-sm border border-gray-100 dark:border-white/5'
                     }`}>
                         <span className="whitespace-pre-wrap">{m.text}</span>
+                        {m.image && (
+                            <div className="mt-3 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10">
+                                <img src={m.image} alt="Context" className="w-full h-auto object-cover max-h-40" />
+                            </div>
+                        )}
                         {m.links && (
                             <div className="mt-3 grid gap-2">
                                 {m.links.map((link, idx) => (
@@ -645,7 +682,7 @@ WING_STATUS: Deployed`;
                   {SUGGESTIONS.map((s, idx) => (
                      <button 
                        key={idx} 
-                       onClick={() => handleSend(s.label.includes('Search') ? 'search' : s.label.includes('Sys') ? '/help' : s.label.includes('Game') ? 'play game' : s.label.includes('Events') ? 'events' : s.label.includes('Team') ? 'team' : s.label)}
+                       onClick={() => handleSend(s.label.includes('Search') ? 'search' : s.label.includes('help') ? '/help' : s.label.includes('Game') ? 'play game' : s.label.includes('Events') ? 'events' : s.label.includes('Gallery') ? 'gallery' : s.label)}
                        className="whitespace-nowrap px-3 py-1.5 bg-gray-100 dark:bg-white/5 rounded-full text-[10px] font-bold text-gray-500 dark:text-gray-400 hover:bg-hive-gold hover:text-hive-blue transition-colors flex items-center gap-1.5 border border-transparent hover:border-hive-gold/50"
                      >
                         <s.icon className="w-3 h-3" /> {s.label}
