@@ -20,6 +20,11 @@ export const sanitize = (val: string) => {
     .trim();
 };
 
+export const stripHtml = (html: string) => {
+  if (!html) return "";
+  return html.replace(/<[^>]*>?/gm, '');
+};
+
 export const parseMarkdown = (text: string) => {
   if (!text) return '';
   

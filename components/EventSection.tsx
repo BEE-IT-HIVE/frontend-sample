@@ -62,7 +62,7 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
     if (!selectedEvent || !selectedEvent.organizers) return [];
     return selectedEvent.organizers.map(name => {
       const member = team.find(m => m.name === name);
-      return member || { name, role: 'Event Coordinator', image: '' }; // Fallback if member not found in team
+      return member || { name, role: 'Event Coordinator', image: '' }; 
     });
   }, [selectedEvent, team]);
 
@@ -98,19 +98,21 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
     const registrationClosed = selectedEvent.registrationDeadline ? new Date() > new Date(selectedEvent.registrationDeadline) : false;
 
     return (
-      <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 min-h-screen animate-in fade-in duration-500 relative">
+      <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 min-h-screen animate-in fade-in duration-500 relative overflow-hidden">
+        {/* Meteor background for detail view */}
+        <Meteors number={20} />
+        
         <button 
           onClick={handleBackToList}
-          className="mb-10 text-sm font-bold text-gray-400 hover:text-hive-blue dark:hover:text-white flex items-center transition-all group"
+          className="mb-10 text-sm font-bold text-gray-400 hover:text-hive-blue dark:hover:text-white flex items-center transition-all group relative z-10"
         >
           <i className="fa-solid fa-arrow-left mr-2 transition-transform group-hover:-translate-x-1"></i> Back to Events
         </button>
 
-        {/* Featured Shine Border for Event Banner */}
         <ShineBorder 
           className="relative w-full rounded-[3rem] overflow-hidden shadow-2xl mb-12 border-0 p-0" 
           color={["#FFAA0D", "#DB3069", "#030A37"]}
-          borderWidth={2}
+          borderWidth={3}
         >
           <div className="relative w-full h-[400px] md:h-[560px]">
             <LazyImage 
@@ -119,14 +121,15 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-            <div className="absolute top-8 right-8 bg-white/90 dark:bg-hive-blue/90 backdrop-blur-md px-8 py-3 rounded-3xl text-sm font-black uppercase tracking-[0.3em] text-hive-blue dark:text-white shadow-2xl border border-white/20">
-              {selectedEvent.type}
+            <div className="absolute top-8 right-8">
+              <Badge className="bg-white/90 dark:bg-hive-blue/90 backdrop-blur-md px-8 py-3 rounded-3xl text-sm font-black uppercase tracking-[0.3em] text-hive-blue dark:text-white shadow-2xl border border-white/20">
+                {selectedEvent.type}
+              </Badge>
             </div>
           </div>
         </ShineBorder>
 
-        {/* Event Detail Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
             <div className="lg:col-span-2 space-y-8">
                 <div>
                     <h1 className="text-4xl md:text-5xl font-black text-hive-blue dark:text-white mb-4 font-heading">{selectedEvent.title}</h1>
@@ -142,7 +145,6 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
                     dangerouslySetInnerHTML={{ __html: parseMarkdown(selectedEvent.description || '') }} 
                 />
 
-                {/* Organizers */}
                 {eventOrganizers.length > 0 && (
                     <div className="pt-8 border-t border-gray-100 dark:border-white/10">
                         <h3 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-6">Event Organizers</h3>
@@ -161,15 +163,14 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
                 )}
             </div>
 
-            {/* Sidebar Actions */}
             <div className="space-y-6">
-                <Card className="p-8 border-t-4 border-t-hive-gold">
+                <Card className="p-8 border-t-4 border-t-hive-gold relative overflow-hidden">
                     <div className="text-center mb-6">
                         <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">Registration Status</p>
                         {isPast ? (
-                            <span className="inline-block px-4 py-2 bg-gray-200 dark:bg-white/10 rounded-full text-xs font-bold text-gray-500 uppercase">Event Ended</span>
+                            <Badge variant="secondary" className="px-4 py-2 text-xs font-bold uppercase">Event Ended</Badge>
                         ) : isCancelled ? (
-                            <span className="inline-block px-4 py-2 bg-red-100 dark:bg-red-900/30 rounded-full text-xs font-bold text-red-500 uppercase">Cancelled</span>
+                            <Badge variant="destructive" className="px-4 py-2 text-xs font-bold uppercase">Cancelled</Badge>
                         ) : (
                             <div className="space-y-1">
                                 <p className="text-3xl font-black text-hive-blue dark:text-white">{selectedEvent.capacity - selectedEvent.registeredCount}</p>
@@ -216,7 +217,6 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
             </div>
         </div>
 
-        {/* Modals */}
         {showRegistration && (
             <EventRegistration 
               event={selectedEvent} 
@@ -231,10 +231,9 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
     );
   }
 
-  // LIST VIEW
   return (
-    <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 min-h-screen">
-       <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 animate-in fade-in slide-in-from-top-4 duration-500">
+    <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 min-h-screen relative overflow-hidden">
+       <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6 animate-in fade-in slide-in-from-top-4 duration-500 relative z-10">
           <div>
              <h1 className="text-5xl md:text-6xl font-black text-hive-blue dark:text-white mb-4 font-heading">Events Hub</h1>
              <p className="text-gray-500 dark:text-gray-400 max-w-xl">Join the buzz. Workshops, hackathons, and socials designed to elevate your skills.</p>
@@ -256,7 +255,7 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
        {displayFormat === 'CALENDAR' ? (
           <EventCalendar onEventClick={handleEventClick} />
        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
              {filteredEvents.map((event, idx) => (
                 <div 
                   key={event.id}
@@ -264,37 +263,42 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
                   className="group relative cursor-pointer"
                   style={{ animationDelay: `${idx * 100}ms` }}
                 >
-                   <div className="absolute inset-0 bg-hive-gold blur-xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-[2.5rem]"></div>
-                   <Card className="h-full flex flex-col border-gray-100 dark:border-white/5 hover:border-hive-gold/30 transition-all duration-300 rounded-[2.5rem]">
-                      <div className="relative h-56 overflow-hidden shrink-0">
-                         <LazyImage src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                         <div className="absolute top-4 left-4">
-                            <Badge variant={event.type === 'hackathon' ? 'default' : 'secondary'} className="uppercase tracking-widest text-[10px] font-black shadow-lg backdrop-blur-md">
-                               {event.type}
-                            </Badge>
-                         </div>
-                         <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-black/80 to-transparent"></div>
-                         <div className="absolute bottom-6 left-6 text-white">
-                            <p className="font-bold text-lg leading-tight mb-1">{new Date(event.datetime.start).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</p>
-                            <p className="text-[10px] uppercase tracking-widest opacity-80">{new Date(event.datetime.start).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'})}</p>
-                         </div>
-                      </div>
-                      
-                      <div className="p-8 flex flex-col flex-grow">
-                         <h3 className="text-xl font-black text-hive-blue dark:text-white mb-3 group-hover:text-hive-gold transition-colors leading-tight font-heading">{event.title}</h3>
-                         <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-6 flex-grow">{event.description}</p>
-                         
-                         <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
-                               <i className="fa-solid fa-location-dot text-hive-gold"></i>
-                               <span className="truncate max-w-[120px]">{event.location.name}</span>
-                            </div>
-                            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center group-hover:bg-hive-gold group-hover:text-hive-blue transition-colors">
-                               <i className="fa-solid fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform"></i>
-                            </div>
-                         </div>
-                      </div>
-                   </Card>
+                   <ShineBorder 
+                    className="h-full flex flex-col border-gray-100 dark:border-white/5 rounded-[2.5rem] bg-transparent p-0 overflow-hidden" 
+                    color={["#A0AEC0", "#FFAA0D", "#4A5568"]}
+                    borderWidth={1}
+                   >
+                     <Card className="h-full flex flex-col border-0 transition-all duration-300 rounded-[2.5rem] bg-white dark:bg-hive-blue/40">
+                        <div className="relative h-56 overflow-hidden shrink-0">
+                           <LazyImage src={event.image} alt={event.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                           <div className="absolute top-4 left-4">
+                              <Badge variant={event.type === 'hackathon' ? 'default' : 'secondary'} className="uppercase tracking-widest text-[10px] font-black shadow-lg backdrop-blur-md">
+                                 {event.type}
+                              </Badge>
+                           </div>
+                           <div className="absolute bottom-0 left-0 w-full h-2/3 bg-gradient-to-t from-black/80 to-transparent"></div>
+                           <div className="absolute bottom-6 left-6 text-white">
+                              <p className="font-bold text-lg leading-tight mb-1">{new Date(event.datetime.start).toLocaleDateString(undefined, {month:'short', day:'numeric'})}</p>
+                              <p className="text-[10px] uppercase tracking-widest opacity-80">{new Date(event.datetime.start).toLocaleTimeString(undefined, {hour:'2-digit', minute:'2-digit'})}</p>
+                           </div>
+                        </div>
+                        
+                        <div className="p-8 flex flex-col flex-grow">
+                           <h3 className="text-xl font-black text-hive-blue dark:text-white mb-3 group-hover:text-hive-gold transition-colors leading-tight font-heading">{event.title}</h3>
+                           <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-6 flex-grow">{event.description}</p>
+                           
+                           <div className="flex items-center justify-between pt-6 border-t border-gray-100 dark:border-white/5">
+                              <div className="flex items-center gap-2 text-xs font-bold text-gray-400">
+                                 <i className="fa-solid fa-location-dot text-hive-gold"></i>
+                                 <span className="truncate max-w-[120px]">{event.location.name}</span>
+                              </div>
+                              <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center group-hover:bg-hive-gold group-hover:text-hive-blue transition-colors">
+                                 <i className="fa-solid fa-arrow-right -rotate-45 group-hover:rotate-0 transition-transform"></i>
+                              </div>
+                           </div>
+                        </div>
+                     </Card>
+                   </ShineBorder>
                 </div>
              ))}
           </div>
