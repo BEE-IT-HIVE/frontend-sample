@@ -17,7 +17,7 @@ const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
   };
 
   return (
-    <footer className="bg-white dark:bg-[#030A37] border-t border-gray-100 dark:border-white/10 pt-24 pb-12 relative overflow-hidden transition-colors duration-500">
+    <footer className="bg-white dark:bg-[#020515] border-t border-gray-100 dark:border-white/10 pt-24 pb-12 relative overflow-hidden transition-colors duration-500">
       {/* Animated Background Blobs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <motion.div
@@ -139,7 +139,7 @@ const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
         <div className="border-t border-gray-100 dark:border-white/10 mt-12 pt-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
           <div className="space-y-6">
             <div>
-              {/* Logo Group with Glow - Updated Hover Effect to Blue */}
+              {/* Logo Group with Glow */}
               <div className="relative inline-flex items-center gap-4 mb-4 p-4 rounded-2xl border border-hive-gold/30 bg-gradient-to-br from-white/80 to-white/40 dark:from-white/5 dark:to-transparent shadow-[0_0_25px_rgba(255,170,13,0.2)] backdrop-blur-md select-none group hover:border-hive-blue transition-colors">
                 {/* Glow Element */}
                 <div className="absolute inset-0 bg-hive-blue/10 blur-xl rounded-2xl -z-10 opacity-50 group-hover:opacity-100 transition-opacity"></div>
