@@ -95,6 +95,7 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
   if (viewMode === 'DETAIL' && selectedEvent) {
     const isPast = selectedEvent.status === 'completed';
     const isCancelled = selectedEvent.status === 'cancelled';
+    const registrationClosed = selectedEvent.registrationDeadline ? new Date() > new Date(selectedEvent.registrationDeadline) : false;
 
     return (
       <div className="pt-32 pb-20 max-w-7xl mx-auto px-4 min-h-screen animate-in fade-in duration-500 relative">
@@ -136,7 +137,7 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
                 </Badge>
               ))}
             </div>
-            <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 mb-12 leading-relaxed">
+            <div className="prose prose-lg dark:prose-invert max-w-none text-gray-600 dark:text-gray-300 mb-12 leading-relaxed whitespace-pre-wrap">
               <p className="text-lg">{selectedEvent.description}</p>
             </div>
 
@@ -178,7 +179,20 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
                      </p>
                   </div>
                 </div>
-                {/* ... other details ... */}
+                
+                {selectedEvent.registrationDeadline && (
+                    <div className="flex items-start">
+                        <div className="w-12 h-12 rounded-full bg-red-100/10 flex items-center justify-center text-red-500 mr-5 shrink-0 text-xl shadow-inner">
+                            <i className="fa-solid fa-hourglass-end"></i>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.25em] mb-2">Registration Closes</p>
+                            <p className={`font-bold text-lg leading-tight ${registrationClosed ? 'text-red-500' : 'text-hive-blue dark:text-white'}`}>
+                                {new Date(selectedEvent.registrationDeadline).toLocaleDateString()}
+                            </p>
+                        </div>
+                    </div>
+                )}
               </div>
 
               <div className="p-4 pt-0 relative z-10">
@@ -194,6 +208,10 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
                   >
                     <i className="fa-solid fa-comment-dots mr-3 text-lg"></i> Leave Feedback
                   </Button>
+                ) : registrationClosed ? (
+                  <div className="w-full py-6 bg-gray-100 dark:bg-white/5 text-gray-500 rounded-[2rem] text-center font-bold border border-gray-200 dark:border-white/10 text-xs uppercase tracking-widest">
+                    Registration Closed. Thank you.
+                  </div>
                 ) : (
                   <Button 
                     onClick={() => setShowRegistration(true)}
@@ -280,13 +298,17 @@ const EventSection: React.FC<EventSectionProps> = ({ onBreadcrumbUpdate }) => {
             <Card key={event.id} onClick={() => handleEventClick(event)} className="overflow-hidden border border-gray-100 dark:border-white/10 shadow-sm hover:shadow-xl transition-all group cursor-pointer flex flex-col h-full rounded-[2rem]">
               <div className="h-48 relative overflow-hidden shrink-0">
                 <LazyImage src={event.image} alt={event.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                <Badge className="absolute top-4 right-4 text-[10px] font-bold uppercase tracking-widest bg-white/90 text-hive-blue backdrop-blur-md">{event.type}</Badge>
+                <div className="absolute top-4 right-4 flex gap-2">
+                    <Badge className="text-[10px] font-bold uppercase tracking-widest bg-white/90 text-hive-blue backdrop-blur-md">{event.type}</Badge>
+                    {event.status === 'cancelled' && <Badge variant="destructive" className="text-[10px] font-bold uppercase">Cancelled</Badge>}
+                    {event.status === 'completed' && <Badge variant="secondary" className="text-[10px] font-bold uppercase">Done</Badge>}
+                </div>
               </div>
               <div className="p-8 flex flex-col flex-grow">
                 <div className="flex items-center text-xs text-gray-400 font-bold uppercase mb-4 space-x-4">
                   <span><i className="fa-solid fa-calendar mr-2 text-hive-gold"></i> {new Date(event.datetime.start).toLocaleDateString()}</span>
                 </div>
-                <h3 className="text-2xl font-bold text-hive-blue dark:text-white mb-4 leading-tight group-hover:text-hive-gold transition-colors line-clamp-2">{event.title}</h3>
+                <h3 className="text-2xl font-bold text-hive-blue dark:text-white mb-4 leading-tight group-hover:text-hive-gold transition-colors line-clamp-1 truncate">{event.title}</h3>
                 <div className="mt-auto">
                   <Button className="w-full rounded-2xl text-xs">{timeFilter === 'PAST' ? 'View Recap' : 'View Details'}</Button>
                 </div>
