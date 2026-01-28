@@ -43,7 +43,8 @@ const Footer: React.FC<FooterProps> = ({ onPageChange }) => {
               {[
                 { label: 'Facebook', url: 'https://facebook.com/beeit.hive', icon: 'fa-facebook' },
                 { label: 'Instagram', url: 'https://instagram.com/beeit.hive', icon: 'fa-instagram' },
-                { label: 'GitHub', url: 'https://github.com/beeit-hive', icon: 'fa-github' },
+                { label: 'LinkedIn', url: 'https://www.linkedin.com/company/bee-it-hive/', icon: 'fa-linkedin' },
+                { label: 'GitHub', url: 'https://github.com/bee-ithive', icon: 'fa-github' },
               ].map((item) => (
                 <a
                   key={item.label}
